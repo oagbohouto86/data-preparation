@@ -201,13 +201,31 @@ cleaning works*/
 
 **************************3rd step: Data preparation***************************;
 
+/*Data merging
+Now lets merge storm1 with basin_codes and type_codes to get BasinName and
+Storm_Type.
+*/
+title 'Merge storm_summary with basin_codes and type_codes';
+proc sql;
+create table training.storm1 as
+	select * 
+	from training.storm_summary as sf left join training.Basin_Codes as bc 
+		on sf.Basin=bc.Basin left join training.Type_Codes as tc on sf.Type=tc.Type; 
+quit;
+
+/* we wil now concatenate this dataset with storm for season 2017*/
+title 'Concatenate others storms  with 2017 storms';
+data training.storm1_new;
+	set training.storm1 training.storm_2017;
+run;
+
 /*In the previous step we note that we must change the name of variable Hem NS and Hem EW to 
 avoid space, replace -9999 values in MinPressure by missing values, recode na values
 by NA in basin variables. */
 
 title 'Recode variables';
 data training.storm (rename=('Hem NS'n=Hem_NS 'Hem EW'n=Hem_EW));
-	set training.storm_summary;
+	set training.storm1_new;
 	
 	if MinPressure=-9999 then MinPressure=.;
 	else if MinPressure=100 then MinPressure=.;
@@ -233,7 +251,7 @@ Then we will create other news variables:
 - recode oceancode
 */
 title 'Adding new variables: Pressure Group, Ocean code, Ocean, duration';
-data training.storm1 ;
+data training.storm_final ;
 	set training.storm;
 	if MinPressure=. then PressureGroup=.;
 	ELSE if MinPressure<=920 then PressureGroup=1;
@@ -249,23 +267,7 @@ data training.storm1 ;
 	duration=EndDate-StartDate;
 run;
 
-/*
-Now lets merge storm1 with basin_codes and type_codes to get BasinName and
-Storm_Type.
-*/
-title 'Merge storm_summary with basin_codes and type_codes';
-proc sql;
-create table training.storm1_new as
-	select * 
-	from training.storm1 as sf left join training.Basin_Codes as bc 
-		on sf.Basin=bc.Basin left join training.Type_Codes as tc on sf.Type=tc.Type; 
-quit;
 
-/* we wil now concatenate this dataset with storm for season 2017*/
-title 'Concatenate others storms  with 2017 storms';
-data training.storm_final;
-	set training.storm1_new training.storm_2017;
-run;
 
 /*So we obtain the final dataset which will be use for table, figure plot and differents 
 analyses*/
