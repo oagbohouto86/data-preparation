@@ -3,5 +3,5 @@ Data exploration and preparation
 
 ## Requirements
 
-*SAS*
-*R : library dplyr tidyverse summarytools pastecs
+**SAS**
+**R** : dplyr tidyverse summarytools pastecs
