@@ -1,4 +1,4 @@
-# preparation
+# data preparation
 Data exploration and preparation
 
 ## Requirements
